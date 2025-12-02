@@ -1,0 +1,32 @@
+{
+	"info": {
+		"_postman_id": "5fe799cf-897a-41c2-823e-b57a1e2cb215",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47980287",
+		"_collection_link": "https://cherylaurellya577-6571604.postman.co/workspace/Cheryl-Aurellya's-Workspace~3bc66b72-2acc-416e-8d2d-36caad74db72/collection/47980287-5fe799cf-897a-41c2-823e-b57a1e2cb215?action=share&source=collection_link&creator=47980287"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://intero-warung-xybu.vercel.app/api/warung",
+					"protocol": "https",
+					"host": [
+						"intero-warung-xybu",
+						"vercel",
+						"app"
+					],
+					"path": [
+						"api",
+						"warung"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

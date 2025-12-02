@@ -1,0 +1,237 @@
+{
+	"info": {
+		"_postman_id": "36d8928e-14d6-4d24-b82a-6598393874f6",
+		"name": "dino_clothes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47979537",
+		"_collection_link": "https://dinofeb152-3404851.postman.co/workspace/interopabilitassmt2~a2a2475f-8f0f-4fe8-9824-bdc0042bcfe2/collection/47979537-36d8928e-14d6-4d24-b82a-6598393874f6?action=share&source=collection_link&creator=47979537"
+	},
+	"item": [
+		{
+			"name": "status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "registerOwner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"Bos Dino\",\r\n  \"password\": \"dinoGanteng15\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3300/register-owner",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"register-owner"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "registerAdmin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"admin1\",\r\n  \"password\": \"admin1\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3300/register-admin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"register-admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login admin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"admin1\",\r\n  \"password\": \"admin1\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3300/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login owner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"Bos Dino\",\r\n  \"password\": \"dinoGanteng15\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3300/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "tambah produk",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoyLCJ1c2VybmFtZSI6ImJvcyBkaW5vIiwicm9sZSI6Im93bmVyIn0sImlhdCI6MTc2NDQyMDI3NCwiZXhwIjoxNzY0NDIzODc0fQ.J1Wx-KN6Pm23l1vC-Sa-Y6KNJZEiOzMQjKEFc9ESqGw",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"sku\": \"TSHIRT-001\",\r\n  \"productName\": \"Baju Nirvana kw super\",\r\n  \"price\":75000\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3300/tambahProducts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"tambahProducts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update stok",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjozLCJ1c2VybmFtZSI6ImFkbWluMSIsInJvbGUiOiJ3YXJlaG91c2VBZG1pbiJ9LCJpYXQiOjE3NjQ0MjAxMTUsImV4cCI6MTc2NDQyMzcxNX0.hZ1gghcPXKd00Bn6Rq0KXp5yD5MVKT8Sx4CjevWItoc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"isAvailable\": \"true\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3300/editStock/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"editStock",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "hapus produk",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoyLCJ1c2VybmFtZSI6ImJvcyBkaW5vIiwicm9sZSI6Im93bmVyIn0sImlhdCI6MTc2NDQyMDI3NCwiZXhwIjoxNzY0NDIzODc0fQ.J1Wx-KN6Pm23l1vC-Sa-Y6KNJZEiOzMQjKEFc9ESqGw",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:3300/products/TSHIRT-001",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"products",
+						"TSHIRT-001"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
