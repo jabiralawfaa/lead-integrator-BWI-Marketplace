@@ -10,16 +10,189 @@
  * - Vendor C (Resto & Kuliner): Sistem kompleks dengan struktur bersarang
  */
 
-const express = require('express');
-const cors = require('cors');
+// Untuk lingkungan serverless seperti Vercel, kita perlu menggunakan handler khusus
+// Alih-alih aplikasi Express tradisional
+const http = require('http');
 
-// Inisialisasi aplikasi Express
-const app = express();
-const PORT = process.env.PORT || 3000;
+// Untuk mendukung fetch di lingkungan serverless Vercel
+// fetch seharusnya tersedia di Node.js versi terbaru di Vercel
 
-// Konfigurasi middleware
-app.use(cors()); // Mengizinkan permintaan dari domain manapun
-app.use(express.json()); // Memungkinkan parsing JSON dari body permintaan
+// Fungsi untuk menangani permintaan di lingkungan serverless
+function handleRequest(req, res) {
+  // Set header CORS untuk serverless
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Tangani preflight request
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 200;
+    res.end();
+    return;
+  }
+
+  // Gunakan URL dan method dari permintaan
+  const { method, url } = req;
+
+  // Handler untuk rute-rute API
+  if (url === '/api/products' && method === 'GET') {
+    handleProductsRequest(req, res);
+  } else if (url.startsWith('/api/normalize/') && method === 'POST') {
+    handleNormalizeRequest(req, res);
+  } else if (url === '/health' && method === 'GET') {
+    handleHealthRequest(req, res);
+  } else {
+    // 404 handler
+    res.statusCode = 404;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      success: false,
+      message: 'Route not found'
+    }));
+  }
+}
+
+// Handler untuk endpoint /api/products
+async function handleProductsRequest(req, res) {
+  try {
+    res.setHeader('Content-Type', 'application/json');
+
+    // Ambil data dari API vendor aktual secara paralel untuk efisiensi
+    const [vendorAData, vendorBData] = await Promise.all([
+      fetchVendorAData(),    // Ambil data dari Vendor A
+      fetchVendorBData()     // Ambil data dari Vendor B
+    ]);
+
+    // Data Vendor C akan diambil dari API ketika tersedia
+    // Untuk sementara, gunakan data contoh saat parameter test digunakan
+    const vendorCData = req.url.includes('test=true') ? [
+      {
+        "id": 501,
+        "details": {
+          "name": "Nasi Tempong",
+          "category": "Food"
+        },
+        "pricing": {
+          "base_price": 20000,
+          "tax": 2000
+        },
+        "stock": 50
+      }
+    ] : [];
+
+    // Integrasi semua data dari ketiga vendor ke dalam format standar
+    const normalizedData = VendorDataNormalizer.integrateAllVendors(
+      vendorAData,
+      vendorBData,
+      vendorCData
+    );
+
+    // Kembalikan data terintegrasi dalam format standar
+    res.statusCode = 200;
+    res.end(JSON.stringify({
+      success: true,
+      data: normalizedData,
+      count: normalizedData.length,
+      sources: {
+        vendorA: vendorAData.length,
+        vendorB: vendorBData.length,
+        vendorC: vendorCData.length
+      }
+    }));
+  } catch (error) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      success: false,
+      message: "Error normalizing vendor data",
+      error: error.message
+    }));
+  }
+}
+
+// Handler untuk endpoint /api/normalize/:vendorType
+async function handleNormalizeRequest(req, res) {
+  try {
+    res.setHeader('Content-Type', 'application/json');
+
+    // Ekstrak vendor type dari URL
+    const urlParts = req.url.split('/');
+    const vendorType = urlParts[urlParts.length - 1];
+
+    // Baca body permintaan
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', () => {
+      try {
+        const vendorData = JSON.parse(body);
+        let normalizedData = [];
+
+        // Pilih fungsi normalisasi berdasarkan jenis vendor
+        switch (vendorType.toLowerCase()) {
+          case 'vendor_a':
+            // Normalisasi data dari Vendor A (Warung Legacy)
+            normalizedData = VendorDataNormalizer.normalizeVendorA(vendorData);
+            break;
+          case 'vendor_b':
+            // Normalisasi data dari Vendor B (Distro Modern)
+            normalizedData = VendorDataNormalizer.normalizeVendorB(vendorData);
+            break;
+          case 'vendor_c':
+            // Normalisasi data dari Vendor C (Resto & Kuliner)
+            normalizedData = VendorDataNormalizer.normalizeVendorC(vendorData);
+            break;
+          default:
+            res.statusCode = 400;
+            res.end(JSON.stringify({
+              success: false,
+              message: `Unknown vendor type: ${vendorType}`
+            }));
+            return;
+        }
+
+        // Kembalikan data yang telah dinormalisasi
+        res.statusCode = 200;
+        res.end(JSON.stringify({
+          success: true,
+          data: normalizedData,
+          count: normalizedData.length,
+          source: vendorType
+        }));
+
+      } catch (parseError) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({
+          success: false,
+          message: "Invalid JSON in request body",
+          error: parseError.message
+        }));
+      }
+    });
+
+  } catch (error) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      success: false,
+      message: `Error normalizing ${vendorType} data`,
+      error: error.message
+    }));
+  }
+}
+
+// Handler untuk endpoint health
+function handleHealthRequest(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  res.statusCode = 200;
+  res.end(JSON.stringify({
+    status: 'OK',
+    message: 'Banyuwangi Marketplace Integration Service is running',
+    timestamp: new Date().toISOString()
+  }));
+}
 
 /**
  * Kelas VendorDataNormalizer - Layanan inti untuk integrasi data
