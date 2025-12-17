@@ -33,32 +33,6 @@ Retrieve all normalized products from the 3 vendor systems.
 }
 ```
 
-### POST /api/normalize/:vendorType
-Normalize data from a specific vendor type.
-
-#### Path Parameters
-- `vendorType` - Type of vendor ("vendor_a", "vendor_b", or "vendor_c")
-
-#### Request Body
-Array of vendor-specific product objects
-
-#### Response
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "A001",
-      "nama": "Kopi Bubuk 100g",
-      "harga_final": 13500,
-      "status": "Tersedia",
-      "sumber": "Vendor A"
-    }
-  ],
-  "count": 1,
-  "source": "vendor_a"
-}
-```
 
 ### GET /health
 Health check endpoint to verify the service is running.
@@ -122,7 +96,7 @@ Health check endpoint to verify the service is running.
   - Source added as "Vendor B"
 
 ### Vendor C (Resto & Kuliner)
-- **API Endpoint**: [Not yet provided - using test data when ?test=true parameter is used]
+- **API Endpoint**: `https://resto-api-olive.vercel.app/api/resto`
 - **Data Format**:
   ```json
   [

@@ -1,0 +1,31 @@
+{
+	"info": {
+		"_postman_id": "049380f1-f23e-4cbe-ad10-23abc2557230",
+		"name": "PROJECT AKHIR",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41787442"
+	},
+	"item": [
+		{
+			"name": "LEAD-INTEGRATOR",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://banyuwangi-marketplace-api.vercel.app/api/products",
+					"protocol": "https",
+					"host": [
+						"banyuwangi-marketplace-api",
+						"vercel",
+						"app"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

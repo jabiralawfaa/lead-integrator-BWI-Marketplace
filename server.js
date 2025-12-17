@@ -31,11 +31,12 @@ app.use(express.json()); // Memungkinkan parsing JSON dari body permintaan
 class VendorDataNormalizer {
   /**
    * Menormalisasi data dari Vendor A (Warung Legacy)
-   * 
-   * Vendor A menggunakan sistem lama di mana semua tipe data berupa STRING termasuk harga.
-   * Fungsi ini mengonversi harga dari string ke integer dan menerapkan diskon otomatis 10%
-   * pada semua produk dari vendor ini sesuai dengan persyaratan bisnis.
-   * 
+   *
+   * Bayangkan Vendor A ini kayak orang tua yang masih pake uang recehan dan kertas semua itemnya.
+   * Segala sesuatu disimpen dalam bentuk teks (string), termasuk harga!
+   * Fungsi ini ibaratkan translator yang ngebantu ngubah semua ke bentuk normal,
+   * plus kasih diskon 10% kayak ada program loyalitas khusus.
+   *
    * @param {Array} data - Array objek produk dalam format Vendor A
    * @returns {Array} - Array objek produk dalam format standar
    */
@@ -44,7 +45,7 @@ class VendorDataNormalizer {
       // Konversi harga dari string ke integer dan terapkan diskon 10% untuk Vendor A
       const originalPrice = parseInt(item.hrg || "0", 10);
       const discountedPrice = Math.floor(originalPrice * 0.9); // Diskon 10%
-      
+
       return {
         id: item.kd_produk || "",           // Kode produk dari Vendor A
         nama: item.nm_brg || "",           // Nama barang dari Vendor A
@@ -57,10 +58,11 @@ class VendorDataNormalizer {
 
   /**
    * Menormalisasi data dari Vendor B (Distro Modern)
-   * 
-   * Vendor B menggunakan format standar internasional dengan penamaan field dalam bahasa Inggris
-   * dan tipe data yang benar. Fungsi ini memetakan field-field tersebut ke dalam format standar.
-   * 
+   *
+   * Ini kayak anak muda urban yang udah pake format internasional.
+   * Semuanya rapi, pake bahasa Inggris dan tipenya udah bener.
+   * Fungsi ini tinggal ngubah sedikit aja biar sesuai dengan standar kita.
+   *
    * @param {Array} data - Array objek produk dalam format Vendor B
    * @returns {Array} - Array objek produk dalam format standar
    */
@@ -78,36 +80,40 @@ class VendorDataNormalizer {
 
   /**
    * Menormalisasi data dari Vendor C (Resto & Kuliner)
-   * 
-   * Vendor C memiliki struktur data kompleks dengan objek bersarang. Harga dipisahkan dari pajak.
-   * Fungsi ini menghitung harga akhir (harga dasar + pajak) dan menambahkan label "(Recommended)"
-   * untuk produk dengan kategori "Food" sesuai persyaratan bisnis.
-   * 
+   *
+   * Vendor C ini kayak orang yang terlalu detail, datanya bersarang2 gitu.
+   * Harga dipisah dari pajak, jadi kita harus jumlahin dulu kayak ngitung total makanan + pajak.
+   * Plus kalo produknya makanan, kita tambahin label '(Recommended)' biar keliatan mantep.
+   *
    * @param {Array} data - Array objek produk dalam format Vendor C
    * @returns {Array} - Array objek produk dalam format standar
    */
   static normalizeVendorC(data) {
     return data.map(item => {
-      // Hitung harga akhir termasuk pajak
-      const pricing = item.pricing || {};      // Ambil objek harga
-      const basePrice = pricing.base_price || 0; // Harga dasar
-      const tax = pricing.tax || 0;             // Jumlah pajak
+      // Handle field names with spaces (like " id ", " details ", etc.)
+      const id = item.id || item[' id '] || '';
+      const details = item.details || item[' details '] || {};
+      const pricing = item.pricing || item[' pricing '] || {};
+
+      // Extract base price and tax from pricing object, handling possible spacing
+      const basePrice = pricing.base_price || pricing[' base_price '] || 0;
+      const tax = pricing.tax || pricing[' tax '] || 0;
       const finalPrice = basePrice + tax;       // Harga akhir
-      
-      const details = item.details || {};       // Ambil objek detail produk
-      const category = details.category || "";  // Kategori produk
-      let name = details.name || "";            // Nama produk
-      
+
+      // Extract category and name, handling possible spacing in nested objects
+      const category = (details.category || details[' category '] || '').trim();
+      let name = (details.name || details[' name '] || '').trim();
+
       // Tambahkan label (Recommended) jika kategori adalah "Food"
       if (category.toLowerCase() === "food") {
         name = `${name} (Recommended)`;         // Tambahkan label untuk produk makanan
       }
-      
+
       return {
-        id: String(item.id || ""),              // Konversi ID ke string
+        id: String(id),                         // Konversi ID ke string
         nama: name,                             // Nama produk (mungkin dengan label rekomendasi)
         harga_final: parseInt(finalPrice),      // Pastikan harga dalam bentuk integer
-        status: (item.stock && item.stock > 0) ? "Tersedia" : "Habis", // Konversi stok ke status
+        status: ((item.stock || item[' stock ']) && (item.stock || item[' stock ']) > 0) ? "Tersedia" : "Habis", // Konversi stok ke status
         sumber: "Vendor C"                      // Identifikasi sumber data
       };
     });
@@ -115,10 +121,11 @@ class VendorDataNormalizer {
 
   /**
    * Mengintegrasikan data dari ketiga vendor ke dalam satu format terpadu
-   * 
-   * Fungsi ini menggabungkan semua data dari ketiga vendor setelah dinormalisasi
-   * menjadi satu array dalam format standar yang digunakan oleh Marketplace Banyuwangi.
-   * 
+   *
+   * Fungsi ini kayak chef yang ngebikin menu komplit.
+   * Ambil semua produk dari ketiga vendor, udah dinormalisasi dulu,
+   * trus digabung jadi satu kesatuan yang siap disajikan ke marketplace.
+   *
    * @param {Array} vendorAData - Data produk dari Vendor A
    * @param {Array} vendorBData - Data produk dari Vendor B
    * @param {Array} vendorCData - Data produk dari Vendor C
@@ -138,10 +145,10 @@ class VendorDataNormalizer {
 
 /**
  * Fungsi untuk mengambil data dari API Vendor B
- * 
- * Fungsi ini mengambil data dari endpoint produk API Dino Clothes.
- * Berdasarkan pengujian langsung, endpoint yang benar adalah /products
- * 
+ *
+ * Ini kayak kita mampir ke toko baju buat liat barang-barangnya.
+ * Kita ambil semua produk dari API Dino Clothes, kalo ada error ya kita return kosong aja.
+ *
  * @returns {Promise<Array>} - Promise yang mengembalikan array produk atau array kosong jika gagal
  */
 async function fetchVendorBData() {
@@ -162,10 +169,10 @@ async function fetchVendorBData() {
 
 /**
  * Fungsi untuk mengambil data dari API Vendor A
- * 
- * Fungsi ini menghubungi API Vendor A secara async untuk mengambil data produk terbaru
- * dan menangani berbagai kasus error yang mungkin terjadi saat permintaan API.
- * 
+ *
+ * Ini kayak mampir ke warung langganan buat liat stok barangnya.
+ * Kita hubungi warungnya, kalo ada yang error ya kita tetep bawa pulang hasilnya (meskipun kosong).
+ *
  * @returns {Promise<Array>} - Promise yang mengembalikan array produk atau array kosong jika gagal
  */
 async function fetchVendorAData() {
@@ -185,41 +192,53 @@ async function fetchVendorAData() {
   }
 }
 
+/**
+ * Fungsi untuk mengambil data dari API Vendor C
+ *
+ * Ini kayak mampir ke resto buat liat menu makanannya.
+ * Kita ambil semua menu dari resto, kalo ada error ya kita pulang dengan tangan kosong.
+ *
+ * @returns {Promise<Array>} - Promise yang mengembalikan array produk atau array kosong jika gagal
+ */
+async function fetchVendorCData() {
+  try {
+    // Mengambil data dari API Vendor C
+    const response = await fetch('https://resto-api-olive.vercel.app/api/resto');
+    if (!response.ok) {
+      // Jika permintaan API gagal, lempar error
+      throw new Error(`Vendor C API error: ${response.status}`);
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : []; // Kembalikan data jika array, jika tidak kembalikan array kosong
+  } catch (error) {
+    // Log error ke konsol jika terjadi kesalahan
+    console.error('Error fetching Vendor C data:', error);
+    return []; // Kembalikan array kosong jika terjadi error
+  }
+}
+
 // Rute-rute API untuk layanan integrasi
 
 // Endpoint utama untuk mendapatkan semua produk terintegrasi
+// Ini kayak pasar raya, semua barang dari berbagai toko digabung jadi satu
 app.get('/api/products', async (req, res) => {
   try {
     // Ambil data dari API vendor aktual secara paralel untuk efisiensi
-    const [vendorAData, vendorBData] = await Promise.all([
+    // Kita jemput barang dari ketiga toko sekaligus biar cepet
+    const [vendorAData, vendorBData, vendorCData] = await Promise.all([
       fetchVendorAData(),    // Ambil data dari Vendor A
-      fetchVendorBData()     // Ambil data dari Vendor B
+      fetchVendorBData(),     // Ambil data dari Vendor B
+      fetchVendorCData()      // Ambil data dari Vendor C
     ]);
-    
-    // Data Vendor C akan diambil dari API ketika tersedia
-    // Untuk sementara, gunakan data contoh saat parameter test digunakan
-    const vendorCData = req.query.test ? [
-      {
-        "id": 501,
-        "details": {
-          "name": "Nasi Tempong",
-          "category": "Food"
-        },
-        "pricing": {
-          "base_price": 20000,
-          "tax": 2000
-        },
-        "stock": 50
-      }
-    ] : [];
-    
+
     // Integrasi semua data dari ketiga vendor ke dalam format standar
+    // Kayak ngegabungin semua barang ke dalam satu katalog
     const normalizedData = VendorDataNormalizer.integrateAllVendors(
-      vendorAData, 
-      vendorBData, 
+      vendorAData,
+      vendorBData,
       vendorCData
     );
-    
+
     // Kembalikan data terintegrasi dalam format standar
     res.json({
       success: true,                    // Status sukses
@@ -241,59 +260,13 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// Endpoint untuk menormalisasi data dari vendor spesifik
-app.post('/api/normalize/:vendorType', (req, res) => {
-  const { vendorType } = req.params;    // Jenis vendor dari parameter URL
-  const vendorData = req.body;          // Data vendor dari body permintaan
-  
-  try {
-    let normalizedData = [];
-    
-    // Pilih fungsi normalisasi berdasarkan jenis vendor
-    switch (vendorType.toLowerCase()) {
-      case 'vendor_a':
-        // Normalisasi data dari Vendor A (Warung Legacy)
-        normalizedData = VendorDataNormalizer.normalizeVendorA(vendorData);
-        break;
-      case 'vendor_b':
-        // Normalisasi data dari Vendor B (Distro Modern)
-        normalizedData = VendorDataNormalizer.normalizeVendorB(vendorData);
-        break;
-      case 'vendor_c':
-        // Normalisasi data dari Vendor C (Resto & Kuliner)
-        normalizedData = VendorDataNormalizer.normalizeVendorC(vendorData);
-        break;
-      default:
-        // Kembalikan error jika jenis vendor tidak dikenali
-        return res.status(400).json({
-          success: false,
-          message: `Unknown vendor type: ${vendorType}`
-        });
-    }
-    
-    // Kembalikan data yang telah dinormalisasi
-    res.json({
-      success: true,
-      data: normalizedData,
-      count: normalizedData.length,
-      source: vendorType
-    });
-    
-  } catch (error) {
-    // Tangani kesalahan saat normalisasi data vendor spesifik
-    res.status(500).json({
-      success: false,
-      message: `Error normalizing ${vendorType} data`,
-      error: error.message
-    });
-  }
-});
 
 // Endpoint untuk pengecekan kesehatan layanan
+// Kayak nanya "Masih hidup ga nih servernya?"
 app.get('/health', (req, res) => {
   // Kembalikan status kesehatan layanan
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'Banyuwangi Marketplace Integration Service is running',
     timestamp: new Date().toISOString()  // Waktu saat permintaan
   });
