@@ -1,17 +1,27 @@
 /**
  * Banyuwangi Marketplace Integration Service
- * 
+ *
  * Layanan integrasi ini bertugas untuk menggabungkan data produk dari berbagai vendor
  * yang memiliki format data berbeda-beda menjadi satu format standar untuk Marketplace Banyuwangi.
- * 
+ *
  * Layanan ini mengintegrasikan data dari 3 vendor:
  * - Vendor A (Warung): Sistem lama, semua tipe data string termasuk harga
  * - Vendor B (Distro Modern): Sistem modern dengan format standar internasional
  * - Vendor C (Resto & Kuliner): Sistem kompleks dengan struktur bersarang
  */
 
+require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const cors = require('cors');
+
+// Validate required environment variables
+const requiredEnvVars = ['VENDOR_A_API', 'VENDOR_B_API', 'VENDOR_C_API'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+  process.exit(1);
+}
 
 // Inisialisasi aplikasi Express
 const app = express();
@@ -144,30 +154,6 @@ class VendorDataNormalizer {
 }
 
 /**
- * Fungsi untuk mengambil data dari API Vendor B
- *
- * Ini kayak kita mampir ke toko baju buat liat barang-barangnya.
- * Kita ambil semua produk dari API Dino Clothes, kalo ada error ya kita return kosong aja.
- *
- * @returns {Promise<Array>} - Promise yang mengembalikan array produk atau array kosong jika gagal
- */
-async function fetchVendorBData() {
-  try {
-    // Gunakan endpoint produk yang benar berdasarkan pengujian langsung
-    const response = await fetch('https://dino-clothes.vercel.app/products');
-    if (!response.ok) {
-      throw new Error(`Vendor B API error: ${response.status}`);
-    }
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    // Log error ke konsol jika terjadi kesalahan
-    console.error('Error fetching Vendor B data:', error);
-    return []; // Kembalikan array kosong jika terjadi error
-  }
-}
-
-/**
  * Fungsi untuk mengambil data dari API Vendor A
  *
  * Ini kayak mampir ke warung langganan buat liat stok barangnya.
@@ -177,8 +163,8 @@ async function fetchVendorBData() {
  */
 async function fetchVendorAData() {
   try {
-    // Mengambil data dari API Vendor A
-    const response = await fetch('https://intero-warung-xybu.vercel.app/api/warung');
+    // Mengambil data dari API Vendor A menggunakan environment variable
+    const response = await fetch(process.env.VENDOR_A_API);
     if (!response.ok) {
       // Jika permintaan API gagal, lempar error
       throw new Error(`Vendor A API error: ${response.status}`);
@@ -193,6 +179,30 @@ async function fetchVendorAData() {
 }
 
 /**
+ * Fungsi untuk mengambil data dari API Vendor B
+ *
+ * Ini kayak kita mampir ke toko baju buat liat barang-barangnya.
+ * Kita ambil semua produk dari API Dino Clothes, kalo ada error ya kita return kosong aja.
+ *
+ * @returns {Promise<Array>} - Promise yang mengembalikan array produk atau array kosong jika gagal
+ */
+async function fetchVendorBData() {
+  try {
+    // Gunakan endpoint produk yang benar berdasarkan pengujian langsung dari environment variable
+    const response = await fetch(process.env.VENDOR_B_API);
+    if (!response.ok) {
+      throw new Error(`Vendor B API error: ${response.status}`);
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    // Log error ke konsol jika terjadi kesalahan
+    console.error('Error fetching Vendor B data:', error);
+    return []; // Kembalikan array kosong jika terjadi error
+  }
+}
+
+/**
  * Fungsi untuk mengambil data dari API Vendor C
  *
  * Ini kayak mampir ke resto buat liat menu makanannya.
@@ -202,8 +212,8 @@ async function fetchVendorAData() {
  */
 async function fetchVendorCData() {
   try {
-    // Mengambil data dari API Vendor C
-    const response = await fetch('https://resto-api-olive.vercel.app/api/resto');
+    // Mengambil data dari API Vendor C menggunakan environment variable
+    const response = await fetch(process.env.VENDOR_C_API);
     if (!response.ok) {
       // Jika permintaan API gagal, lempar error
       throw new Error(`Vendor C API error: ${response.status}`);
